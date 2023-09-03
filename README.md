@@ -1,4 +1,4 @@
-#CSCI 927 Prodject - ServiceUni
+# CSCI 927 Prodject - ServiceUni
 
 To run the project follow these steps:
 
