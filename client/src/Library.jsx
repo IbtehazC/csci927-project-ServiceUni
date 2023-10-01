@@ -1,9 +1,24 @@
-import  { useState } from "react";
-import { Button, Form, Card } from "react-bootstrap";
+import { useState, useEffect } from "react";
+import { Button, Form, Card, ListGroup } from "react-bootstrap";
 import axios from "axios";
 
 const Library = () => {
   const [bookName, setBookName] = useState("");
+  const [books, setBooks] = useState([]);
+
+  // Fetch available books when the component mounts
+  useEffect(() => {
+    const fetchAvailableBooks = async () => {
+      try {
+        const response = await axios.get("/library/books"); // Adjust this URL to match your backend route
+        setBooks(response.data);
+      } catch (error) {
+        console.error("Failed to fetch books", error);
+      }
+    };
+
+    fetchAvailableBooks();
+  }, []);
 
   const handleRentBook = async () => {
     try {
@@ -49,6 +64,16 @@ const Library = () => {
             Return Book
           </Button>
         </Form>
+
+        <h5 className="mt-4">Available Books:</h5>
+        <ListGroup>
+          {books.map((book) => (
+            <ListGroup.Item key={book._id}>
+              Title: {book.title}, Author: {book.author}
+              {book.rentedBy && <span className="text-danger"> (Rented)</span>}
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
       </Card.Body>
     </Card>
   );

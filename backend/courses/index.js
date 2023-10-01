@@ -1,5 +1,3 @@
-// /course-add-drop/index.js
-
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
@@ -12,7 +10,7 @@ mongoose
   .then((result) => console.log(result))
   .catch((err) => console.log(err));
 
-const courseSchema = new mongoose.Schema({
+const CourseSchema = new mongoose.Schema({
   name: String,
   capacity: Number,
   enrolledStudents: [

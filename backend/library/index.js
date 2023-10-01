@@ -1,5 +1,3 @@
-// /library-book-rental/index.js
-
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
@@ -12,7 +10,7 @@ mongoose
   .then((result) => console.log(result))
   .catch((err) => console.log(err));
 
-const bookSchema = new mongoose.Schema({
+const BookSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -22,9 +20,9 @@ const bookSchema = new mongoose.Schema({
     required: true,
   },
   rentedBy: {
-    type: mongoose.Schema.Types.ObjectId, // Pointing to the Student ID
+    type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    default: null, // When not rented, this will be null
+    default: null,
   },
 });
 
@@ -64,7 +62,7 @@ app.delete("/books/:id", async (req, res) => {
   }
 });
 
-router.post("/rent", async (req, res) => {
+app.post("/rent", async (req, res) => {
   const { bookId, studentId } = req.body;
 
   if (!bookId || !studentId) {

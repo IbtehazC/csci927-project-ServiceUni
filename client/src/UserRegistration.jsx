@@ -9,7 +9,7 @@ const UserRegistration = () => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("/user-authentication/register", {
+      await axios.post("http://localhost:4000/register", {
         username,
         password,
         role,
