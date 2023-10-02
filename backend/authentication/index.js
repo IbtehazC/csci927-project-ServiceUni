@@ -14,9 +14,33 @@ mongoose
   .catch((err) => console.log(err));
 
 const UserSchema = new mongoose.Schema({
-  username: String,
-  password: String,
-  role: String,
+  username: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    enum: ["student", "faculty", "admin"],
+    required: true,
+  },
+  // List of courses that the user can add or drop
+  courses: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Course",
+    default: null,
+  },
+  // List of books that the user can rent or return
+  books: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Book",
+      default: null,
+    },
+  ],
 });
 
 const User = mongoose.model("User", UserSchema);

@@ -1,6 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const app = express();
+
+app.use(cors());
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/universityCourses", {
@@ -29,11 +32,13 @@ const Course = mongoose.model("Course", CourseSchema);
 
 app.use(express.json());
 
+// Get all courses
 app.get("/courses", async (req, res) => {
   const courses = await Course.find({});
   res.send(courses);
 });
 
+// Create a new course
 app.post("/courses", async (req, res) => {
   try {
     const course = new Course(req.body);
@@ -46,6 +51,7 @@ app.post("/courses", async (req, res) => {
   }
 });
 
+// Delete existing course
 app.delete("/courses/:id", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -61,6 +67,7 @@ app.delete("/courses/:id", async (req, res) => {
   }
 });
 
+// Enroll new students
 app.post("/courses/:courseId/enroll", async (req, res) => {
   const { studentId } = req.body;
 
@@ -80,6 +87,7 @@ app.post("/courses/:courseId/enroll", async (req, res) => {
   }
 });
 
+// Assign faculty to the course
 app.post("/courses/:courseId/assign-faculty", async (req, res) => {
   const { facultyId } = req.body;
 

@@ -10,7 +10,7 @@ const Library = () => {
   useEffect(() => {
     const fetchAvailableBooks = async () => {
       try {
-        const response = await axios.get("/library/books"); // Adjust this URL to match your backend route
+        const response = await axios.get("http://localhost:3001/books"); // Adjust this URL to match your backend route
         setBooks(response.data);
       } catch (error) {
         console.error("Failed to fetch books", error);

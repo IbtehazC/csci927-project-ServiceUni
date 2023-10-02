@@ -5,6 +5,9 @@ import UserRegistration from "./UserRegistration";
 import { UserProvider } from "./UserContext";
 import UsersList from "./UserList";
 import { Container, Stack } from "react-bootstrap";
+import CoursesList from "./CourseList";
+import CreateCourse from "./CreateCourse";
+import AddBook from "./AddBook";
 
 function App() {
   return (
@@ -26,7 +29,10 @@ function App() {
             <CourseManagement />
           </div>
           <div className="p-2">
-            <UserLogin />
+            <CoursesList />
+          </div>
+          <div className="p-2">
+            <CreateCourse />
           </div>
         </Stack>
         <Stack direction="horizontal">
@@ -34,7 +40,7 @@ function App() {
             <Library />
           </div>
           <div className="p-2">
-            <UserLogin />
+            <AddBook />
           </div>
         </Stack>
       </Container>
