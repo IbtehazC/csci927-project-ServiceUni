@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const amqp = require("amqplib/callback_api");
 const app = express();
 
 app.use(cors());
@@ -16,25 +17,54 @@ mongoose
 const CourseSchema = new mongoose.Schema({
   name: String,
   capacity: Number,
-  enrolledStudents: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
-  faculty: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
+  enrolledStudents: [],
+  faculty: String,
 });
 
 const Course = mongoose.model("Course", CourseSchema);
 
 app.use(express.json());
 
+var userId = "";
+
+amqp.connect("amqp://localhost", function (error0, connection) {
+  if (error0) {
+    throw error0;
+  }
+  connection.createChannel(function (error1, channel) {
+    if (error1) {
+      throw error1;
+    }
+    var queue = "user";
+
+    channel.assertQueue(queue, {
+      durable: false,
+    });
+
+    studentId = queue;
+    console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
+
+    channel.consume(
+      queue,
+      function (msg) {
+        console.log(" [x] Received %s", msg.content);
+      },
+      {
+        noAck: true,
+      }
+    );
+  });
+});
+
 // Get all courses
 app.get("/courses", async (req, res) => {
   const courses = await Course.find({});
+  res.send(courses);
+});
+
+// Get all courses for the student
+app.get("/:id/courses", async (req, res) => {
+  const courses = await Course.find({ enrolledStudents: req.params.id });
   res.send(courses);
 });
 
@@ -48,6 +78,21 @@ app.post("/courses", async (req, res) => {
     res
       .status(500)
       .send({ message: "Error adding course", error: error.message });
+  }
+});
+
+// Get course by ID
+app.get("/courses/:id", async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).send({ message: "Course not found" });
+    }
+    res.status(200).send({ message: "Course Found", course });
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: "Error Finding course", error: error.message });
   }
 });
 
@@ -107,18 +152,22 @@ app.post("/courses/:courseId/assign-faculty", async (req, res) => {
   }
 });
 
-app.post("/enroll", async (req, res) => {
+// Add course by student if available
+app.post("/courses/addcourse", async (req, res) => {
   const course = await Course.findById(req.body.courseId);
+  if ((userId = "")) return;
   if (course && course.enrolled < course.capacity) {
     course.enrolled++;
+    course.enrolledStudents.push(studentId);
     await course.save();
     res.send({ message: "Enrolled to the course", course });
   } else res.status(400).send({ message: "Course full" });
 });
 
-app.post("/drop", async (req, res) => {
+app.post("courses/removecourse/", async (req, res) => {
   const course = await Course.findById(req.body.courseId);
-  if (course && course.enrolled > 0) {
+  if ((userId = "")) return;
+  if (course && course.enrolledStudents.find(req.params.id)) {
     course.enrolled--;
     await course.save();
     res.send({ message: "Dropped the course", course });

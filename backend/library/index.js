@@ -1,9 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors")
+const cors = require("cors");
 const app = express();
 
-app.use(cors())
+app.use(cors());
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/universityLibrary", {
@@ -22,11 +22,7 @@ const BookSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  rentedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    default: null,
-  },
+  rentedBy: String,
 });
 
 const Book = mongoose.model("Book", BookSchema);

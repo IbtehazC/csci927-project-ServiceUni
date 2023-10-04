@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const amqp = require("amqplib/callback_api");
 const app = express();
 
 app.use(cors());
@@ -74,6 +75,27 @@ app.post("/login", async (req, res) => {
   const user = await User.findOne({
     username: req.body.username,
     password: req.body.password,
+  });
+  amqp.connect("amqp://localhost", function (error0, connection) {
+    if (error0) {
+      throw error0;
+    }
+
+    connection.createChannel(function (error1, channel) {
+      if (error1) {
+        throw error1;
+      }
+      var queue = "user";
+      var msg = user._id;
+
+      channel.assertQueue(queue, {
+        durable: false,
+      });
+
+      channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)));
+
+      console.log(" [x] Sent %s", msg);
+    });
   });
   if (user) res.send({ message: "Logged in", user });
   else res.status(401).send({ message: "Invalid credentials" });
