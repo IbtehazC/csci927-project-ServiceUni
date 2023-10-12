@@ -4,14 +4,16 @@ const cors = require("cors");
 const amqp = require("amqplib/callback_api");
 const app = express();
 
+const { co } = require("./seed");
+
 app.use(cors());
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/universityUser", {
+  .connect("mongodb://mongo:27017/universityUsers", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then((result) => console.log(result))
+  .then(() => console.log("Connection opened"))
   .catch((err) => console.log(err));
 
 const UserSchema = new mongoose.Schema({
@@ -28,29 +30,22 @@ const UserSchema = new mongoose.Schema({
     enum: ["student", "faculty", "admin"],
     required: true,
   },
-  // List of courses that the user can add or drop
-  courses: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "Course",
-    default: null,
-  },
-  // List of books that the user can rent or return
-  books: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Book",
-      default: null,
-    },
-  ],
 });
 
 const User = mongoose.model("User", UserSchema);
 
 app.use(express.json());
 
-app.get("", async (req, res) => {
-  res.status(200).send("you have reached");
+mongoose.connection.on("connected", async () => {
+  const count = await mongoose.connection.db
+    .collection("users")
+    .countDocuments();
+  if (count == 0) {
+    await User.insertMany(seedUsers);
+  }
 });
+
+// if(User.collection('users'))
 
 app.get("/users", async (req, res) => {
   try {
@@ -62,6 +57,10 @@ app.get("/users", async (req, res) => {
 });
 
 app.post("/register", async (req, res) => {
+  // const existingUser = await User.findOne({ username });
+  // if (existingUser) {
+  //   return res.status(400).json({ error: "User already exists." });
+  // }
   try {
     const user = new User(req.body);
     await user.save();
@@ -75,27 +74,6 @@ app.post("/login", async (req, res) => {
   const user = await User.findOne({
     username: req.body.username,
     password: req.body.password,
-  });
-  amqp.connect("amqp://localhost", function (error0, connection) {
-    if (error0) {
-      throw error0;
-    }
-
-    connection.createChannel(function (error1, channel) {
-      if (error1) {
-        throw error1;
-      }
-      var queue = "user";
-      var msg = user._id;
-
-      channel.assertQueue(queue, {
-        durable: false,
-      });
-
-      channel.sendToQueue(queue, Buffer.from(JSON.stringify(msg)));
-
-      console.log(" [x] Sent %s", msg);
-    });
   });
   if (user) res.send({ message: "Logged in", user });
   else res.status(401).send({ message: "Invalid credentials" });

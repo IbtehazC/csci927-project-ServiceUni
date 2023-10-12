@@ -1,16 +1,17 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { seedBooks } = require("./seed");
 const app = express();
 
 app.use(cors());
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/universityLibrary", {
+  .connect("mongodb://mongo:27017/universityLibrary", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then((result) => console.log(result))
+  .then(() => console.log("Connected to db"))
   .catch((err) => console.log(err));
 
 const BookSchema = new mongoose.Schema({
@@ -22,15 +23,34 @@ const BookSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  rentedBy: String,
+  rentedBy: {
+    type: String,
+    default: "",
+  },
 });
 
 const Book = mongoose.model("Book", BookSchema);
 
 app.use(express.json());
 
+mongoose.connection.on("connected", async () => {
+  const count = await mongoose.connection.db
+    .collection("books")
+    .countDocuments();
+  if (count == 0) {
+    await Book.insertMany(seedBooks);
+  }
+});
+
+// Get all books
 app.get("/books", async (req, res) => {
   const books = await Book.find({});
+  res.send(books);
+});
+
+// Get all books rented by student with ID
+app.get("/:studentId/books", async (req, res) => {
+  const books = await Book.find({ rentedBy: req.params.studentId });
   res.send(books);
 });
 
@@ -61,10 +81,10 @@ app.delete("/books/:id", async (req, res) => {
   }
 });
 
-app.post("/rent", async (req, res) => {
-  const { bookId, studentId } = req.body;
+app.post("/:studentId/rent", async (req, res) => {
+  const { bookId } = req.body;
 
-  if (!bookId || !studentId) {
+  if (!bookId || !req.params.studentId) {
     return res
       .status(400)
       .json({ error: "Book ID and Student ID are required." });
@@ -81,12 +101,14 @@ app.post("/rent", async (req, res) => {
       return res.status(400).json({ error: "Book is already rented." });
     }
 
-    book.rentedBy = studentId;
+    console.log(book);
+    book.rentedBy = req.params.studentId;
+    console.log(book);
     await book.save();
 
-    res.status(200).json({ message: "Book rented successfully." });
+    res.status(200).send({ message: "Book rented successfully.", book });
   } catch (error) {
-    res.status(500).json({ error: "Server error." });
+    res.status(500).send({ message: "Server Error", error });
   }
 });
 

@@ -4,20 +4,22 @@ const cors = require("cors");
 const amqp = require("amqplib/callback_api");
 const app = express();
 
+const seedCourses = require("./seed.js");
+
 app.use(cors());
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/universityCourses", {
+  .connect("mongodb://mongo:27017/universityCourses", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then((result) => console.log(result))
+  .then(() => console.log("Connected to db"))
   .catch((err) => console.log(err));
 
 const CourseSchema = new mongoose.Schema({
   name: String,
   capacity: Number,
-  enrolledStudents: [],
+  enrolledStudents: [String],
   faculty: String,
 });
 
@@ -25,38 +27,48 @@ const Course = mongoose.model("Course", CourseSchema);
 
 app.use(express.json());
 
-var userId = "";
-
-amqp.connect("amqp://localhost", function (error0, connection) {
-  if (error0) {
-    throw error0;
+mongoose.connection.on("connected", async () => {
+  const count = await mongoose.connection.db
+    .collection("courses")
+    .countDocuments();
+  if (count == 0) {
+    await Course.insertMany(seedCourses);
   }
-  connection.createChannel(function (error1, channel) {
-    if (error1) {
-      throw error1;
-    }
-    var queue = "user";
-
-    channel.assertQueue(queue, {
-      durable: false,
-    });
-
-    studentId = queue;
-    console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
-
-    channel.consume(
-      queue,
-      function (msg) {
-        console.log(" [x] Received %s", msg.content);
-      },
-      {
-        noAck: true,
-      }
-    );
-  });
 });
 
+// var userId = "";
+
+// amqp.connect("amqp://localhost", function (error0, connection) {
+//   if (error0) {
+//     throw error0;
+//   }
+//   connection.createChannel(function (error1, channel) {
+//     if (error1) {
+//       throw error1;
+//     }
+//     var queue = "user";
+
+//     channel.assertQueue(queue, {
+//       durable: false,
+//     });
+
+//     studentId = queue;
+//     console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
+
+//     channel.consume(
+//       queue,
+//       function (msg) {
+//         console.log(" [x] Received %s", msg.content);
+//       },
+//       {
+//         noAck: true,
+//       }
+//     );
+//   });
+// });
+
 // Get all courses
+
 app.get("/courses", async (req, res) => {
   const courses = await Course.find({});
   res.send(courses);
@@ -153,18 +165,22 @@ app.post("/courses/:courseId/assign-faculty", async (req, res) => {
 });
 
 // Add course by student if available
-app.post("/courses/addcourse", async (req, res) => {
-  const course = await Course.findById(req.body.courseId);
-  if ((userId = "")) return;
-  if (course && course.enrolled < course.capacity) {
-    course.enrolled++;
-    course.enrolledStudents.push(studentId);
-    await course.save();
-    res.send({ message: "Enrolled to the course", course });
-  } else res.status(400).send({ message: "Course full" });
+app.post("/:studentId/courses/:courseId/addcourse", async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    if (course && course.enrolledStudents.length < course.capacity) {
+      course.enrolledStudents.push(req.params.studentId);
+      await course.save();
+      res.send({ message: "Enrolled to the course", course });
+    } else res.status(400).send({ message: "Course full" });
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: "Error adding course", error: error.message });
+  }
 });
 
-app.post("courses/removecourse/", async (req, res) => {
+app.post("/courses/removecourse/", async (req, res) => {
   const course = await Course.findById(req.body.courseId);
   if ((userId = "")) return;
   if (course && course.enrolledStudents.find(req.params.id)) {

@@ -1,0 +1,33 @@
+version: '3.9'
+
+services:
+  mongo_db:
+    container_name: mongo
+    image: mongo:latest
+    restart: always
+
+  authentication:
+    build: ./backend/authentication
+    ports:
+      - 4000:4000
+    depends_on:
+      - mongo_db
+
+  courses:
+    build: ./backend/courses
+    ports:
+      - 3002:3002
+    depends_on:
+      - mongo_db
+
+  library:
+    build: ./backend/library
+    ports:
+      - 3001:3001
+    depends_on:
+      - mongo_db
+
+  client:
+    build: ./client
+    ports:
+      - 8080:8080

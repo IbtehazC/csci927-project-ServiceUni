@@ -3,47 +3,45 @@ import Library from "./Library";
 import UserLogin from "./UserLogin";
 import UserRegistration from "./UserRegistration";
 import { UserProvider } from "./UserContext";
-import UsersList from "./UserList";
-import { Container, Stack } from "react-bootstrap";
-import CoursesList from "./CourseList";
-import CreateCourse from "./CreateCourse";
-import AddBook from "./AddBook";
+import { Routes, Route } from "react-router-dom";
+import Layout from "./Layout";
+import Dashboard from "./Dashboard";
+import AvailableCoursesList from "./AvailableCoursesList";
 
 function App() {
   return (
     <UserProvider>
-      <Container>
-        <Stack direction="horizontal">
-          <div className="p-2">
-            <UsersList />
-          </div>
-          <div className="p-2">
-            <UserLogin />
-          </div>
-          <div className="p-2">
-            <UserRegistration />
-          </div>
-        </Stack>
-        <Stack direction="horizontal">
-          <div className="p-2">
-            <CourseManagement />
-          </div>
-          <div className="p-2">
-            <CoursesList />
-          </div>
-          <div className="p-2">
-            <CreateCourse />
-          </div>
-        </Stack>
-        <Stack direction="horizontal">
-          <div className="p-2">
-            <Library />
-          </div>
-          <div className="p-2">
-            <AddBook />
-          </div>
-        </Stack>
-      </Container>
+      <Routes>
+        <Route
+          path="/"
+          element={<Layout />}
+        >
+          <Route
+            path="/login"
+            element={<UserLogin />}
+          />
+          <Route
+            path="/register"
+            element={<UserRegistration />}
+          />
+          <Route
+            path="/course"
+            element={<CourseManagement />}
+          />
+          <Route
+            path="/library"
+            element={<Library />}
+          />
+          <Route
+            path="/:id/dashboard"
+            element={<Dashboard />}
+          />
+          <Route
+            path="/courses"
+            element={<AvailableCoursesList />}
+          />
+        </Route>
+      </Routes>
     </UserProvider>
   );
 }

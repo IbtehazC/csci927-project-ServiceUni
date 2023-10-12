@@ -13,7 +13,7 @@ const CoursesList = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3002/651b38d4fc4a333f3ca2ab0f/courses`
+          `http://localhost:3002/${user.user._id}/courses`
         ); // Adjust this URL to your backend route for fetching courses
         setCourses(response.data);
         setLoading(false);
@@ -32,7 +32,7 @@ const CoursesList = () => {
 
   return (
     <Card style={{ marginTop: "20px" }}>
-      <Card.Header>Available Courses</Card.Header>
+      <Card.Header>Courses you currently enrolled in:</Card.Header>
       <Card.Body>
         {error && <Alert variant="danger">Failed to fetch courses.</Alert>}
         <ListGroup>
