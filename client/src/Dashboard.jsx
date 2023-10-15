@@ -1,17 +1,16 @@
 import { useContext } from "react";
-import CoursesList from "./CoursesList";
 import { UserContext } from "./UserContext";
 import { Container } from "react-bootstrap";
-import BooksList from "./BooksLists";
+import StudentDashboard from "./StudentDashboard";
+import AdminDashboard from "./AdminDashboard";
 
 const Dashboard = () => {
   const user = useContext(UserContext);
 
   return (
-    <Container>
-      <h1>{`Hi ${user.user.username}`}</h1>
-      <CoursesList />
-      <BooksList />
+    <Container style={{ marginTop: "1rem" }}>
+      {user.user.role === "student" && <StudentDashboard user={user.user} />}
+      {user.user.role === "admin" && <AdminDashboard user={user.user} />}
     </Container>
   );
 };

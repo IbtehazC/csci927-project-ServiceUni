@@ -1,40 +1,37 @@
-import { useState, useEffect } from "react";
-import { Button, Form, Card, ListGroup } from "react-bootstrap";
+import { useState, useEffect, useContext } from "react";
+import { Button, Card, ListGroup, Alert } from "react-bootstrap";
 import axios from "axios";
+import { UserContext } from "./UserContext";
 
 const Library = () => {
-  const [bookName, setBookName] = useState("");
   const [books, setBooks] = useState([]);
+  const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState(null);
 
-  // Fetch available books when the component mounts
-  useEffect(() => {
-    const fetchAvailableBooks = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/books"); // Adjust this URL to match your backend route
-        setBooks(response.data);
-      } catch (error) {
-        console.error("Failed to fetch books", error);
-      }
-    };
+  const { user } = useContext(UserContext);
 
-    fetchAvailableBooks();
-  }, []);
-
-  const handleRentBook = async () => {
+  const fetchAvailableBooks = async () => {
     try {
-      await axios.post("/library/rent", { name: bookName });
-      alert("Book rented successfully!");
+      const response = await axios.get("http://localhost:3001/books"); // Adjust this URL to match your backend route
+      setBooks(response.data);
     } catch (error) {
-      alert("Failed to rent book!");
+      console.error("Failed to fetch books", error);
     }
   };
 
-  const handleReturnBook = async () => {
+  // Fetch available books when the component mounts
+  useEffect(() => {
+    fetchAvailableBooks();
+  }, []);
+
+  const handleRentBook = async (bookId) => {
     try {
-      await axios.post("/library/return", { name: bookName });
-      alert("Book returned successfully!");
+      await axios.post(`http://localhost:3001/${user._id}/rent`, { bookId });
+      setMessage("Book rented successfully!");
+      setMessageType("success");
+      fetchAvailableBooks();
     } catch (error) {
-      alert("Failed to return book!");
+      alert("Failed to rent book!");
     }
   };
 
@@ -42,35 +39,23 @@ const Library = () => {
     <Card>
       <Card.Header>Library</Card.Header>
       <Card.Body>
-        <Form>
-          <Form.Group>
-            <Form.Label>Book Name</Form.Label>
-            <Form.Control
-              type="text"
-              value={bookName}
-              onChange={(e) => setBookName(e.target.value)}
-            />
-          </Form.Group>
-          <Button
-            variant="primary"
-            onClick={handleRentBook}
-          >
-            Rent Book
-          </Button>{" "}
-          <Button
-            variant="secondary"
-            onClick={handleReturnBook}
-          >
-            Return Book
-          </Button>
-        </Form>
-
-        <h5 className="mt-4">Available Books:</h5>
+        {message && <Alert variant={messageType}>{message}</Alert>}
+        <h5>Available Books:</h5>
         <ListGroup>
           {books.map((book) => (
             <ListGroup.Item key={book._id}>
               Title: {book.title}, Author: {book.author}
-              {book.rentedBy && <span className="text-danger"> (Rented)</span>}
+              {book.rentedBy ? (
+                <span className="text-danger"> (Rented)</span>
+              ) : (
+                <Button
+                  variant="primary"
+                  onClick={() => handleRentBook(book._id)}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Rent
+                </Button>
+              )}
             </ListGroup.Item>
           ))}
         </ListGroup>

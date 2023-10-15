@@ -25,10 +25,6 @@ function App() {
             element={<UserRegistration />}
           />
           <Route
-            path="/course"
-            element={<CourseManagement />}
-          />
-          <Route
             path="/library"
             element={<Library />}
           />

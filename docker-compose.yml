@@ -4,6 +4,8 @@ services:
   mongo_db:
     container_name: mongo
     image: mongo:latest
+    ports:
+      - 27017:27017
     restart: always
 
   authentication:

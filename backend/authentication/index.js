@@ -4,12 +4,12 @@ const cors = require("cors");
 const amqp = require("amqplib/callback_api");
 const app = express();
 
-const { co } = require("./seed");
+const { seedUsers } = require("./seed");
 
 app.use(cors());
 
 mongoose
-  .connect("mongodb://mongo:27017/universityUsers", {
+  .connect("mongodb://localhost:27017/universityUsers", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -17,6 +17,14 @@ mongoose
   .catch((err) => console.log(err));
 
 const UserSchema = new mongoose.Schema({
+  firstname: {
+    type: String,
+    required: true,
+  },
+  lastname: {
+    type: String,
+    required: true,
+  },
   username: {
     type: String,
     required: true,
@@ -51,6 +59,15 @@ app.get("/users", async (req, res) => {
   try {
     const users = await User.find({}); // This retrieves all users
     res.status(200).send(users);
+  } catch (error) {
+    res.status(500).send({ message: "Server error", error: error.message });
+  }
+});
+
+app.get("/users/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id); // This retrieves all users
+    res.status(200).send(user);
   } catch (error) {
     res.status(500).send({ message: "Server error", error: error.message });
   }

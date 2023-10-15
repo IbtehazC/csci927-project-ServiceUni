@@ -4,12 +4,12 @@ const cors = require("cors");
 const amqp = require("amqplib/callback_api");
 const app = express();
 
-const seedCourses = require("./seed.js");
+const { seedCourses } = require("./seed.js");
 
 app.use(cors());
 
 mongoose
-  .connect("mongodb://mongo:27017/universityCourses", {
+  .connect("mongodb://localhost:27017/universityCourses", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -80,6 +80,11 @@ app.get("/:id/courses", async (req, res) => {
   res.send(courses);
 });
 
+app.get("/faculty/:id/courses", async (req, res) => {
+  const courses = await Course.find({ faculty: req.params.id });
+  res.send(courses);
+});
+
 // Create a new course
 app.post("/courses", async (req, res) => {
   try {
@@ -125,20 +130,20 @@ app.delete("/courses/:id", async (req, res) => {
 });
 
 // Enroll new students
-app.post("/courses/:courseId/enroll", async (req, res) => {
+app.post("/faculty/:facultyId/course/:courseId/enroll", async (req, res) => {
   const { studentId } = req.body;
 
   // First, verify the student exists in user-authentication service
-  const userResponse = await fetch(
-    `http://user-authentication-service-url/users/${studentId}`
-  );
+  const userResponse = await fetch(`http://localhost:4000/users/${studentId}`);
   const user = await userResponse.json();
 
   if (user && user.role === "student") {
     const course = await Course.findById(req.params.courseId);
-    course.enrolledStudents.push(studentId);
-    await course.save();
-    res.status(200).send({ message: "Student enrolled", course });
+    if (course.faculty === req.params.facultyId) {
+      course.enrolledStudents.push(studentId);
+      await course.save();
+      res.status(200).send({ message: "Student enrolled", course });
+    }
   } else {
     res.status(404).send({ message: "Student not found or not a student" });
   }
@@ -149,18 +154,24 @@ app.post("/courses/:courseId/assign-faculty", async (req, res) => {
   const { facultyId } = req.body;
 
   // Verify the faculty exists in user-authentication service
-  const userResponse = await fetch(
-    `http://user-authentication-service-url/users/${facultyId}`
-  );
-  const user = await userResponse.json();
+  try {
+    const userResponse = await fetch(
+      `http://localhost:4000/users/${facultyId}`
+    );
+    const user = await userResponse.json();
 
-  if (user && user.role === "faculty") {
-    const course = await Course.findById(req.params.courseId);
-    course.faculty = facultyId;
-    await course.save();
-    res.status(200).send({ message: "Faculty assigned", course });
-  } else {
-    res.status(404).send({ message: "Faculty not found or not a faculty" });
+    if (user && user.role === "faculty") {
+      const course = await Course.findById(req.params.courseId);
+      course.faculty = facultyId;
+      await course.save();
+      res.status(200).send({ message: "Faculty assigned", course });
+    } else {
+      res.status(404).send({ message: "Faculty not found or not a faculty" });
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: "Error assigning faculties", error: error });
   }
 });
 
@@ -178,16 +189,6 @@ app.post("/:studentId/courses/:courseId/addcourse", async (req, res) => {
       .status(500)
       .send({ message: "Error adding course", error: error.message });
   }
-});
-
-app.post("/courses/removecourse/", async (req, res) => {
-  const course = await Course.findById(req.body.courseId);
-  if ((userId = "")) return;
-  if (course && course.enrolledStudents.find(req.params.id)) {
-    course.enrolled--;
-    await course.save();
-    res.send({ message: "Dropped the course", course });
-  } else res.status(400).send({ message: "Course not enrolled" });
 });
 
 app.listen(3002, () =>

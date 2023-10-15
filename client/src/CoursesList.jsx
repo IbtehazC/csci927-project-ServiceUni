@@ -39,7 +39,6 @@ const CoursesList = () => {
           {courses.map((course) => (
             <ListGroup.Item key={course._id}>
               Course Name: {course.name}
-              {course.faculty && <span>, Faculty: {course.faculty}</span>}
             </ListGroup.Item>
           ))}
         </ListGroup>

@@ -1,9 +1,7 @@
-// src/components/AvailableCourses.js
-
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { Card, Button, Alert, Col, Row, Container } from "react-bootstrap";
-import { UserContext } from "./UserContext"; // Assuming you have a UserContext for logged-in user details
+import { UserContext } from "./UserContext";
 
 const AvailableCoursesList = () => {
   const [courses, setCourses] = useState([]);
@@ -12,25 +10,27 @@ const AvailableCoursesList = () => {
   const user = useContext(UserContext);
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await axios.get("http://localhost:3002/courses");
-        setCourses(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError(err);
-        setLoading(false);
-      }
-    };
-
     fetchCourses();
   }, []);
+
+  const fetchCourses = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get("http://localhost:3002/courses");
+      setCourses(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError(err);
+      setLoading(false);
+    }
+  };
 
   const enrollInCourse = async (courseId) => {
     try {
       await axios.post(
         `http://localhost:3002/${user.user._id}/courses/${courseId}/addcourse`
       );
+      fetchCourses();
     } catch (err) {
       console.error("Failed to enroll:", err);
     }
@@ -56,13 +56,17 @@ const AvailableCoursesList = () => {
                   Seats:{" "}
                   {`${course.enrolledStudents.length}/${course.capacity}`}
                 </Card.Text>
-                {course.enrolledStudents.length < course.capacity && (
-                  <Button
-                    variant="primary"
-                    onClick={() => enrollInCourse(course._id)}
-                  >
-                    Enroll
-                  </Button>
+                {course.enrolledStudents.includes(user.user._id) ? (
+                  <span style={{ color: "green" }}>Already Enrolled</span>
+                ) : (
+                  course.enrolledStudents.length < course.capacity && (
+                    <Button
+                      variant="primary"
+                      onClick={() => enrollInCourse(course._id)}
+                    >
+                      Enroll
+                    </Button>
+                  )
                 )}
               </Card.Body>
             </Card>

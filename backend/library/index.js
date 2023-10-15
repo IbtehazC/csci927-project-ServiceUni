@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 
 mongoose
-  .connect("mongodb://mongo:27017/universityLibrary", {
+  .connect("mongodb://localhost:27017/universityLibrary", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -92,21 +92,42 @@ app.post("/:studentId/rent", async (req, res) => {
 
   try {
     const book = await Book.findById(bookId);
-
     if (!book) {
       return res.status(404).json({ error: "Book not found." });
     }
-
     if (book.rentedBy) {
       return res.status(400).json({ error: "Book is already rented." });
     }
-
-    console.log(book);
     book.rentedBy = req.params.studentId;
-    console.log(book);
     await book.save();
-
     res.status(200).send({ message: "Book rented successfully.", book });
+  } catch (error) {
+    res.status(500).send({ message: "Server Error", error });
+  }
+});
+
+app.post("/:studentId/return", async (req, res) => {
+  const { bookId } = req.body;
+
+  if (!bookId || !req.params.studentId) {
+    return res
+      .status(400)
+      .json({ error: "Book ID and Student ID are required." });
+  }
+
+  try {
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ error: "Book not found." });
+    }
+    if (!book.rentedBy || book.rentedBy !== req.params.studentId) {
+      return res
+        .status(400)
+        .json({ error: "Book is not rented by this student." });
+    }
+    book.rentedBy = "";
+    await book.save();
+    res.status(200).send({ message: "Book returned successfully.", book });
   } catch (error) {
     res.status(500).send({ message: "Server Error", error });
   }
