@@ -9,7 +9,7 @@ const { seedCourses } = require("./seed.js");
 app.use(cors());
 
 mongoose
-  .connect("mongodb://localhost:27017/universityCourses", {
+  .connect("mongodb://mongo:27017/universityCourses", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 
 mongoose
-  .connect("mongodb://localhost:27017/universityLibrary", {
+  .connect("mongodb://mongo:27017/universityLibrary", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

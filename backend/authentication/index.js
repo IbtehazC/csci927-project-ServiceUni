@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const amqp = require("amqplib/callback_api");
 const app = express();
 
 const { seedUsers } = require("./seed");
@@ -9,7 +8,7 @@ const { seedUsers } = require("./seed");
 app.use(cors());
 
 mongoose
-  .connect("mongodb://localhost:27017/universityUsers", {
+  .connect("mongodb://mongo:27017/universityUsers", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -53,7 +52,6 @@ mongoose.connection.on("connected", async () => {
   }
 });
 
-// if(User.collection('users'))
 
 app.get("/users", async (req, res) => {
   try {
@@ -74,10 +72,6 @@ app.get("/users/:id", async (req, res) => {
 });
 
 app.post("/register", async (req, res) => {
-  // const existingUser = await User.findOne({ username });
-  // if (existingUser) {
-  //   return res.status(400).json({ error: "User already exists." });
-  // }
   try {
     const user = new User(req.body);
     await user.save();
