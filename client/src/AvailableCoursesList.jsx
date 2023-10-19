@@ -7,7 +7,7 @@ const AvailableCoursesList = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const user = useContext(UserContext);
+  const { user } = useContext(UserContext); // Extract user from the context
 
   useEffect(() => {
     fetchCourses();
@@ -28,7 +28,7 @@ const AvailableCoursesList = () => {
   const enrollInCourse = async (courseId) => {
     try {
       await axios.post(
-        `http://localhost:3002/${user.user._id}/courses/${courseId}/addcourse`
+        `http://localhost:3002/${user._id}/courses/${courseId}/addcourse`
       );
       fetchCourses();
     } catch (err) {
@@ -39,9 +39,17 @@ const AvailableCoursesList = () => {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <Container>
-      {error && <Alert variant="danger">Failed to fetch courses.</Alert>}
+    <Container className="my-4">
       <Row>
+        <Col>
+          <h1 className="display-4">Offered Courses</h1>
+          {!user && (
+            <Alert variant="info">Log in to enroll into desired courses.</Alert>
+          )}
+        </Col>
+      </Row>
+      {error && <Alert variant="danger">Failed to fetch courses.</Alert>}
+      <Row className="mt-4">
         {courses.map((course) => (
           <Col
             md={4}
@@ -56,18 +64,20 @@ const AvailableCoursesList = () => {
                   Seats:{" "}
                   {`${course.enrolledStudents.length}/${course.capacity}`}
                 </Card.Text>
-                {course.enrolledStudents.includes(user.user._id) ? (
-                  <span style={{ color: "green" }}>Already Enrolled</span>
-                ) : (
-                  course.enrolledStudents.length < course.capacity && (
-                    <Button
-                      variant="primary"
-                      onClick={() => enrollInCourse(course._id)}
-                    >
-                      Enroll
-                    </Button>
+                {user ? (
+                  course.enrolledStudents.includes(user._id) ? (
+                    <span style={{ color: "green" }}>Already Enrolled</span>
+                  ) : (
+                    course.enrolledStudents.length < course.capacity && (
+                      <Button
+                        variant="primary"
+                        onClick={() => enrollInCourse(course._id)}
+                      >
+                        Enroll
+                      </Button>
+                    )
                   )
-                )}
+                ) : null}
               </Card.Body>
             </Card>
           </Col>

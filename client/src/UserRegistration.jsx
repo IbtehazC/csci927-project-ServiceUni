@@ -34,7 +34,7 @@ const Registration = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:4000/register",
+        "http://localhost:3000/register",
         formData
       );
       if (response.data) {

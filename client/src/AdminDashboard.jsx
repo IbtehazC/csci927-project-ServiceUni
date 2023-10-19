@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { ListGroup, Card, Button } from "react-bootstrap";
+import { ListGroup, Card, Button, Form } from "react-bootstrap";
 
 const AdminDashboard = ({ user }) => {
   const [courses, setCourses] = useState([]);
   const [users, setUsers] = useState([]);
+  const [facultyFirstname, setFacultyFirstname] = useState("");
+  const [facultyLastname, setFacultyLastname] = useState("");
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [message, setMessage] = useState(null);
 
-  // Simulate fetching courses from the backend
+  // Fetch courses
   useEffect(() => {
-    // Replace the URL with your real backend URL
     axios
       .get("http://localhost:3002/courses")
       .then((response) => {
@@ -17,26 +20,36 @@ const AdminDashboard = ({ user }) => {
       .catch((error) => console.log(error));
   }, []);
 
-  // Simulate fetching courses from the backend
+  // Fetch users
   useEffect(() => {
-    // Replace the URL with your real backend URL
     axios
-      .get("http://localhost:4000/users")
+      .get("http://localhost:3000/users")
       .then((response) => {
         setUsers(response.data);
       })
       .catch((error) => console.log(error));
   }, []);
 
-  // Handler to assign faculty to a course
-  const handleAssignFaculty = (courseId) => {
-    // Your logic to assign faculty
-    console.log(`Assigning faculty to course ID: ${courseId}`);
+  const handleAssignFaculty = async () => {
+    try {
+      const facultyResponse = await axios.get(
+        `http://localhost:3000/users/get/name?firstname=${facultyFirstname}&lastname=${facultyLastname}`,
+        { facultyFirstname, facultyLastname }
+      );
+      const facultyId = facultyResponse.data.id;
+      console.log(facultyId);
+      await axios.post(
+        `http://localhost:3002/courses/${selectedCourseId}/assign-faculty`,
+        { facultyId }
+      );
+      setMessage("Faculty assigned successfully.");
+    } catch (err) {
+      setMessage("Failed to assign faculty.");
+    }
   };
 
   return (
     <div>
-      {console.log(user)}
       <Card style={{ width: "18rem" }}>
         <Card.Body>
           <Card.Title>{`${user.firstname} ${user.lastname}`}</Card.Title>
@@ -62,27 +75,60 @@ const AdminDashboard = ({ user }) => {
       </Card>
 
       <Card style={{ margin: "20px" }}>
-        <Card.Header>All Courses</Card.Header>
+        <Card.Header>Assign Faculty to Course</Card.Header>
         <Card.Body>
-          {courses.map((course) => (
-            <Card
-              key={course._id}
-              style={{ marginBottom: "15px" }}
-            >
-              <Card.Body>
-                <Card.Title>{course.name}</Card.Title>
-                {course.faculty !== "" && (
-                  <Card.Subtitle>{course.faculty}</Card.Subtitle>
-                )}
-                <Button
-                  variant="primary"
-                  onClick={() => handleAssignFaculty(course._id)}
+          <Form>
+            <Form.Group controlId="facultyFirstname">
+              <Form.Label>Faculty Firstname</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter faculty firstname"
+                value={facultyFirstname}
+                onChange={(e) => setFacultyFirstname(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="facultyLastname">
+              <Form.Label>Faculty Lastname</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter faculty lastname"
+                value={facultyLastname}
+                onChange={(e) => setFacultyLastname(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="selectCourse">
+              <Form.Label>Select Course</Form.Label>
+              <Form.Control
+                as="select"
+                onChange={(e) => setSelectedCourseId(e.target.value)}
+              >
+                <option
+                  value=""
+                  disabled
+                  selected
                 >
-                  Assign Faculty
-                </Button>
-              </Card.Body>
-            </Card>
-          ))}
+                  Select a course
+                </option>
+                {courses.map((course) => (
+                  <option
+                    key={course._id}
+                    value={course._id}
+                  >
+                    {course.name}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+
+            <Button
+              variant="primary"
+              onClick={handleAssignFaculty}
+            >
+              Assign Faculty
+            </Button>
+          </Form>
         </Card.Body>
       </Card>
     </div>

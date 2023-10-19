@@ -36,45 +36,12 @@ mongoose.connection.on("connected", async () => {
   }
 });
 
-// var userId = "";
-
-// amqp.connect("amqp://localhost", function (error0, connection) {
-//   if (error0) {
-//     throw error0;
-//   }
-//   connection.createChannel(function (error1, channel) {
-//     if (error1) {
-//       throw error1;
-//     }
-//     var queue = "user";
-
-//     channel.assertQueue(queue, {
-//       durable: false,
-//     });
-
-//     studentId = queue;
-//     console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
-
-//     channel.consume(
-//       queue,
-//       function (msg) {
-//         console.log(" [x] Received %s", msg.content);
-//       },
-//       {
-//         noAck: true,
-//       }
-//     );
-//   });
-// });
-
-// Get all courses
-
 app.get("/courses", async (req, res) => {
   const courses = await Course.find({});
   res.send(courses);
 });
 
-// Get all courses for the student
+
 app.get("/:id/courses", async (req, res) => {
   const courses = await Course.find({ enrolledStudents: req.params.id });
   res.send(courses);
@@ -85,7 +52,6 @@ app.get("/faculty/:id/courses", async (req, res) => {
   res.send(courses);
 });
 
-// Create a new course
 app.post("/courses", async (req, res) => {
   try {
     const course = new Course(req.body);
@@ -98,7 +64,6 @@ app.post("/courses", async (req, res) => {
   }
 });
 
-// Get course by ID
 app.get("/courses/:id", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -113,7 +78,6 @@ app.get("/courses/:id", async (req, res) => {
   }
 });
 
-// Delete existing course
 app.delete("/courses/:id", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -129,11 +93,9 @@ app.delete("/courses/:id", async (req, res) => {
   }
 });
 
-// Enroll new students
 app.post("/faculty/:facultyId/course/:courseId/enroll", async (req, res) => {
   const { studentId } = req.body;
 
-  // First, verify the student exists in user-authentication service
   const userResponse = await fetch(`http://localhost:4000/users/${studentId}`);
   const user = await userResponse.json();
 
@@ -149,11 +111,8 @@ app.post("/faculty/:facultyId/course/:courseId/enroll", async (req, res) => {
   }
 });
 
-// Assign faculty to the course
 app.post("/courses/:courseId/assign-faculty", async (req, res) => {
   const { facultyId } = req.body;
-
-  // Verify the faculty exists in user-authentication service
   try {
     const userResponse = await fetch(
       `http://localhost:4000/users/${facultyId}`
@@ -175,7 +134,6 @@ app.post("/courses/:courseId/assign-faculty", async (req, res) => {
   }
 });
 
-// Add course by student if available
 app.post("/:studentId/courses/:courseId/addcourse", async (req, res) => {
   try {
     const course = await Course.findById(req.params.courseId);

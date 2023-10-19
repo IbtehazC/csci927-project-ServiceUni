@@ -9,7 +9,7 @@ const UsersList = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/users");
+        const response = await axios.get("http://localhost:3000/users");
         console.log(response.data);
         setUsers(response.data);
         setLoading(false);

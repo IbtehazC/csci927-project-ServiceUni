@@ -1,5 +1,13 @@
 import { useState, useEffect, useContext } from "react";
-import { Button, Card, ListGroup, Alert } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  ListGroup,
+  Alert,
+  Container,
+  Row,
+  Col,
+} from "react-bootstrap";
 import axios from "axios";
 import { UserContext } from "./UserContext";
 
@@ -36,31 +44,39 @@ const Library = () => {
   };
 
   return (
-    <Card>
-      <Card.Header>Library</Card.Header>
-      <Card.Body>
-        {message && <Alert variant={messageType}>{message}</Alert>}
-        <h5>Available Books:</h5>
-        <ListGroup>
-          {books.map((book) => (
-            <ListGroup.Item key={book._id}>
-              Title: {book.title}, Author: {book.author}
-              {book.rentedBy ? (
-                <span className="text-danger"> (Rented)</span>
-              ) : (
-                <Button
-                  variant="primary"
-                  onClick={() => handleRentBook(book._id)}
-                  style={{ marginLeft: "10px" }}
-                >
-                  Rent
-                </Button>
-              )}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      </Card.Body>
-    </Card>
+    <Container className="my-4">
+      <Row>
+        <Col>
+          <h1 className="display-4">Available Books</h1>
+          {!user && <Alert variant="info">Log in to rent books.</Alert>}
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          {message && <Alert variant={messageType}>{message}</Alert>}
+          <ListGroup>
+            {books.map((book) => (
+              <ListGroup.Item key={book._id}>
+                Title: {book.title}, Author: {book.author}
+                {book.rentedBy ? (
+                  <span className="text-danger"> (Rented)</span>
+                ) : user ? (
+                  <Button
+                    variant="primary"
+                    onClick={() => handleRentBook(book._id)}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    Rent
+                  </Button>
+                ) : (
+                  <span style={{ marginLeft: "10px" }}></span>
+                )}
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

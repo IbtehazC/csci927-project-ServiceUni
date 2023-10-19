@@ -1,29 +1,23 @@
-import { Row, Col, Card } from "react-bootstrap";
+import { Row, Col, Container } from "react-bootstrap";
 import CoursesList from "./CoursesList";
 import BooksList from "./BooksLists";
 
 const StudentDashboard = ({ user }) => {
   return (
-    <>
+    <Container className="my-4">
       <Row>
         <Col>
-          <Card style={{ width: "18rem" }}>
-            <Card.Body>
-              <Card.Title>{`${user.firstname} ${user.lastname}`}</Card.Title>
-              <Card.Subtitle className="mb-2 text-muted">
-                {user.role}
-              </Card.Subtitle>
-              <Card.Text>
-                <strong>Username: </strong>
-                {user.username}
-              </Card.Text>
-            </Card.Body>
-          </Card>
+          <h1>{`${user.firstname} ${user.lastname}`}</h1>
+          <p className="mb-2 text-muted">{user.role}</p>
+          <p>
+            <strong>Username: </strong>
+            {user.username}
+          </p>
         </Col>
       </Row>
       <CoursesList />
       <BooksList />
-    </>
+    </Container>
   );
 };
 

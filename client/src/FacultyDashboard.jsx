@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Table, Button, Form, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Table, Button, Form, Alert } from "react-bootstrap";
 
 const FacultyDashboard = ({ user }) => {
   const [courses, setCourses] = useState([]);
-  const [studentIdToAdd, setStudentIdToAdd] = useState('');
+  const [studentIdToAdd, setStudentIdToAdd] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get(`http://localhost:3002/faculty/${facultyId}/courses`);
+        const response = await axios.get(
+          `http://localhost:3002/faculty/${user._id}/courses`
+        );
         setCourses(response.data);
         setLoading(false);
       } catch (err) {
@@ -25,20 +27,23 @@ const FacultyDashboard = ({ user }) => {
 
   const addStudent = async (courseId) => {
     try {
-      await axios.post(`http://localhost:3002/faculty/${user._id}/course/${courseId}/enroll`, {
-        studentId: studentIdToAdd,
-      });
+      await axios.post(
+        `http://localhost:3002/faculty/${user._id}/course/${courseId}/enroll`,
+        {
+          studentId: studentIdToAdd,
+        }
+      );
       // Reload courses
-      const response = await axios.get(`http://localhost:3002/faculty/${user._id}/courses`);
+      const response = await axios.get(
+        `http://localhost:3002/faculty/${user._id}/courses`
+      );
       setCourses(response.data);
     } catch (err) {
-      console.error('Failed to add student:', err);
+      console.error("Failed to add student:", err);
     }
   };
 
-  const dropStudent = async (courseId, studentId) => {
-    
-  };
+  const dropStudent = async (courseId, studentId) => {};
 
   if (loading) return <div>Loading...</div>;
 
@@ -57,7 +62,11 @@ const FacultyDashboard = ({ user }) => {
             />
             <Button onClick={() => addStudent(course._id)}>Add Student</Button>
           </Form.Group>
-          <Table striped bordered hover>
+          <Table
+            striped
+            bordered
+            hover
+          >
             <thead>
               <tr>
                 <th>Student ID</th>
@@ -69,7 +78,10 @@ const FacultyDashboard = ({ user }) => {
                 <tr key={studentId}>
                   <td>{studentId}</td>
                   <td>
-                    <Button variant="danger" onClick={() => dropStudent(course._id, studentId)}>
+                    <Button
+                      variant="danger"
+                      onClick={() => dropStudent(course._id, studentId)}
+                    >
                       Drop
                     </Button>
                   </td>

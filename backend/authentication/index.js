@@ -52,7 +52,6 @@ mongoose.connection.on("connected", async () => {
   }
 });
 
-
 app.get("/users", async (req, res) => {
   try {
     const users = await User.find({}); // This retrieves all users
@@ -66,6 +65,26 @@ app.get("/users/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id); // This retrieves all users
     res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send({ message: "Server error", error: error.message });
+  }
+});
+
+app.get("/users/get/name", async (req, res) => {
+  try {
+    const { firstname, lastname } = req.query; 
+    if (!firstname || !lastname) {
+      return res
+        .status(400)
+        .send({ message: "Both firstname and lastname are required" });
+    }
+    console.log(firstname, lastname);
+    const user = await User.findOne({ firstname, lastname });
+    if (user) {
+      res.status(200).send({ id: user._id });
+    } else {
+      res.status(404).send({ message: "User not found" });
+    }
   } catch (error) {
     res.status(500).send({ message: "Server error", error: error.message });
   }
@@ -90,6 +109,6 @@ app.post("/login", async (req, res) => {
   else res.status(401).send({ message: "Invalid credentials" });
 });
 
-app.listen(4000, () =>
-  console.log("User Authentication Service running on port 4000")
+app.listen(3000, () =>
+  console.log("User Authentication Service running on port 3000")
 );

@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { Form, Button, Card, Alert } from "react-bootstrap";
+import { Form, Button, Alert, Container } from "react-bootstrap";
 import axios from "axios";
 import { UserContext } from "./UserContext"; // adjust path as necessary
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,7 @@ const UserLogin = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:4000/login", {
+      const response = await axios.post("http://localhost:3000/login", {
         username,
         password,
       });
@@ -30,36 +30,35 @@ const UserLogin = () => {
   };
 
   return (
-    <Card>
-      <Card.Header>Login</Card.Header>
-      <Card.Body>
-        {message && <Alert variant={message.type}>{message.content}</Alert>}
-        <Form>
-          <Form.Group>
-            <Form.Label>Username</Form.Label>
-            <Form.Control
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Form.Group>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-          >
-            Login
-          </Button>
-        </Form>
-      </Card.Body>
-    </Card>
+    <Container>
+      {message && <Alert variant={message.type}>{message.content}</Alert>}
+      <h1 className="display-4">User Login</h1>
+      <Form>
+        <Form.Group>
+          <Form.Label>Username</Form.Label>
+          <Form.Control
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Form.Group>
+        <Button
+          variant="primary"
+          onClick={handleSubmit}
+          className="mt-4 btn-lg"
+        >
+          Login
+        </Button>
+      </Form>
+    </Container>
   );
 };
 
