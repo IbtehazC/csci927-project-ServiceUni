@@ -26,6 +26,7 @@ const NavbarComponent = () => {
       expand="lg"
     >
       <Navbar.Brand
+        className=","
         as={Link}
         to="/"
       >

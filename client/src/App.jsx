@@ -1,4 +1,3 @@
-import CourseManagement from "./CourseManagement";
 import Library from "./Library";
 import UserLogin from "./UserLogin";
 import UserRegistration from "./UserRegistration";
@@ -7,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./Layout";
 import Dashboard from "./Dashboard";
 import AvailableCoursesList from "./AvailableCoursesList";
+import HomePage from "./HomePage";
 
 function App() {
   return (
@@ -16,6 +16,10 @@ function App() {
           path="/"
           element={<Layout />}
         >
+          <Route
+            path="/"
+            element={<HomePage />}
+          />
           <Route
             path="/login"
             element={<UserLogin />}
