@@ -8,7 +8,7 @@ const { seedUsers } = require("./seed");
 app.use(cors());
 
 mongoose
-  .connect("mongodb://localhost:27017/universityUsers", {
+  .connect("mongodb://mongo:27017/universityUsers", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -72,7 +72,7 @@ app.get("/users/:id", async (req, res) => {
 
 app.get("/users/get/name", async (req, res) => {
   try {
-    const { firstname, lastname } = req.query; 
+    const { firstname, lastname } = req.query;
     if (!firstname || !lastname) {
       return res
         .status(400)
@@ -82,6 +82,25 @@ app.get("/users/get/name", async (req, res) => {
     const user = await User.findOne({ firstname, lastname });
     if (user) {
       res.status(200).send({ id: user._id });
+    } else {
+      res.status(404).send({ message: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).send({ message: "Server error", error: error.message });
+  }
+});
+
+app.get("/users/get/id", async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(400).send({ message: "Id is required" });
+    }
+    const user = await User.findById(id);
+    if (user) {
+      res
+        .status(200)
+        .send({ firstname: user.firstname, lastname: user.lastname });
     } else {
       res.status(404).send({ message: "User not found" });
     }
@@ -107,6 +126,31 @@ app.post("/login", async (req, res) => {
   });
   if (user) res.send({ message: "Logged in", user });
   else res.status(401).send({ message: "Invalid credentials" });
+});
+
+app.delete("/users/:id", async (req, res) => {
+  try {
+    // Find the user by ID
+    const user = await User.findById(req.params.id);
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    // Prevent deletion of admin users
+    if (user.role === "admin") {
+      return res.status(403).send({ message: "Cannot delete admin users" });
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(req.params.id);
+
+    // Send a success response
+    res.status(200).send({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).send({ message: "Server error", error: error.message });
+  }
 });
 
 app.listen(3000, () =>

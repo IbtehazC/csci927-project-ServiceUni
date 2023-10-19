@@ -9,7 +9,7 @@ const { seedCourses } = require("./seed.js");
 app.use(cors());
 
 mongoose
-  .connect("mongodb://localhost:27017/universityCourses", {
+  .connect("mongodb://mongo:27017/universityCourses", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -96,7 +96,7 @@ app.delete("/courses/:id", async (req, res) => {
 app.post("/faculty/:facultyId/course/:courseId/enroll", async (req, res) => {
   const { studentId } = req.body;
 
-  const userResponse = await fetch(`http://localhost:4000/users/${studentId}`);
+  const userResponse = await fetch(`http://localhost:3000/users/${studentId}`);
   const user = await userResponse.json();
 
   if (user && user.role === "student") {
@@ -115,13 +115,13 @@ app.post("/courses/:courseId/assign-faculty", async (req, res) => {
   const { facultyId } = req.body;
   try {
     const userResponse = await fetch(
-      `http://localhost:4000/users/${facultyId}`
+      `http://localhost:3000/users/${facultyId}`
     );
     const user = await userResponse.json();
 
     if (user && user.role === "faculty") {
       const course = await Course.findById(req.params.courseId);
-      course.faculty = facultyId;
+      course.faculty = `${user.firstname} ${user.lastname}`;
       await course.save();
       res.status(200).send({ message: "Faculty assigned", course });
     } else {

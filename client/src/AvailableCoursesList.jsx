@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, Children } from "react";
 import axios from "axios";
 import { Card, Button, Alert, Col, Row, Container } from "react-bootstrap";
 import { UserContext } from "./UserContext";
@@ -33,6 +33,17 @@ const AvailableCoursesList = () => {
       fetchCourses();
     } catch (err) {
       console.error("Failed to enroll:", err);
+    }
+  };
+
+  const getFacultyName = async (facultyId) => {
+    try {
+      const { firstname, lastname } = await axios.get(
+        `http://localhost:3000/users/get/id?${facultyId}`
+      );
+      return { firstname, lastname };
+    } catch (err) {
+      console.log("Failed to find faculty", err);
     }
   };
 

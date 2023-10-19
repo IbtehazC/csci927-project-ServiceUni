@@ -48,26 +48,43 @@ const AdminDashboard = ({ user }) => {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    try {
+      await axios.delete(`http://localhost:3000/users/${userId}`);
+      const updatedUsers = await axios.get("http://localhost:3000/users");
+      setUsers(updatedUsers.data);
+      setMessage("User deleted successfully.");
+    } catch (err) {
+      setMessage("Failed to delete user.");
+    }
+  };
+
   return (
     <div>
-      <Card style={{ width: "18rem" }}>
-        <Card.Body>
-          <Card.Title>{`${user.firstname} ${user.lastname}`}</Card.Title>
-          <Card.Subtitle className="mb-2 text-muted">{user.role}</Card.Subtitle>
-          <Card.Text>
-            <strong>Username: </strong>
-            {user.username}
-          </Card.Text>
-        </Card.Body>
-      </Card>
+      <h1>{`${user.firstname} ${user.lastname}`}</h1>
+      <p className="mb-2 text-muted">{user.role}</p>
+      <p>
+        <strong>Username: </strong>
+        {user.username}
+      </p>
 
       <Card style={{ margin: "20px" }}>
         <Card.Header>All Users</Card.Header>
         <Card.Body>
           <ListGroup>
-            {users.map((user) => (
-              <ListGroup.Item key={user._id}>
-                {user.firstname} ({user.role})
+            {users.map((userItem) => (
+              <ListGroup.Item key={userItem._id}>
+                {`${userItem.firstname} (${userItem.role})`}
+                {userItem.role !== "admin" && (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    style={{ marginLeft: "10px" }}
+                    onClick={() => handleDeleteUser(userItem._id)}
+                  >
+                    Delete
+                  </Button>
+                )}
               </ListGroup.Item>
             ))}
           </ListGroup>
