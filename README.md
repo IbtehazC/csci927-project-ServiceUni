@@ -2,6 +2,6 @@
 
 To run the project follow these steps:
 
-1. In each of the service folders in the backen run ``npm install``
-2. Install mongodb locally
-3. Then run ``npm start``
+1. Make sure docker is installed
+2. Open terminal in root folder
+3. Then run ``docker-compose up -d``
